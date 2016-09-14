@@ -1,0 +1,85 @@
+using Core.DependencyInjection;
+using MongoDB.Bson;
+using MongoDriver.Constants;
+using MongoDriver.Helper;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace MongoDriver.Action
+{
+    [RegisterSingleton]
+    public class Action : IAction
+    {
+        private readonly ICommonHelper _helper;
+
+        public Action(ICommonHelper helper)
+        {
+            _helper = helper;
+        }
+        public void Insert()
+        {
+            _helper.Insert(SampleData(), DbConstants.Table.Restaurants);
+        }
+
+        public async Task<List<BsonDocument>> GetAll()
+        {
+            return await _helper.GetAll();
+        }     
+
+        public async Task<List<BsonDocument>> QueryByEmbeddedField()
+        {
+            return await _helper.Get("address.zipcode", "10075");
+        }
+
+        public async Task<List<BsonDocument>> QueryByArray()
+        {
+            return await _helper.Get("grades.grade", "10075");
+        }
+
+        public async Task<List<BsonDocument>> QueryByGreaterThan()
+        {
+            return await _helper.GetGreaterThan("grades.score", 30); 
+        }
+
+        public async Task<List<BsonDocument>> QueryByLessThan()
+        {
+            return await _helper.GetGreaterThan("grades.score", 10);
+        }
+
+        public BsonDocument SampleData()
+        {
+            return new BsonDocument
+            {
+                { "address" , new BsonDocument
+                    {
+                        { "street", "2 Avenue" },
+                        { "zipcode", "10075" },
+                        { "building", "1480" },
+                        { "coord", new BsonArray { 73.9557413, 40.7720266 } }
+                    }
+                },
+                { "borough", "Manhattan" },
+                { "cuisine", "Italian" },
+                { "grades", new BsonArray
+                    {
+                        new BsonDocument
+                        {
+                            { "date", new DateTime(2014, 10, 1, 0, 0, 0, DateTimeKind.Utc) },
+                            { "grade", "A" },
+                            { "score", 11 }
+                        },
+                        new BsonDocument
+                        {
+                            { "date", new DateTime(2014, 1, 6, 0, 0, 0, DateTimeKind.Utc) },
+                            { "grade", "B" },
+                            { "score", 17 }
+                        }
+                    }
+                },
+                { "name", "Vella" },
+                { "restaurant_id", "41704620" }
+            };
+        }
+    }
+}

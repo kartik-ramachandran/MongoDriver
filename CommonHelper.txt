@@ -1,0 +1,172 @@
+ public async Task<List<BsonDocument>> GetAll()
+        {
+            return await QueryAll();
+        }
+
+        public async Task<List<BsonDocument>> Get(string field, string value)
+        {
+            return await Query(field, value);
+        }
+
+        public async Task<List<BsonDocument>> Get(string field, int value)
+        {
+            return await Query(field, value);
+        }
+
+        public async Task<List<BsonDocument>> GetGreaterThan(string field, string value)
+        {
+            return await GenericQuery(GetGreaterThanDefinition(field, value));
+        }
+
+        public async Task<List<BsonDocument>> GetLessThan(string field, string value)
+        {
+            return await GenericQuery(GetLessThanDefinition(field, value));
+        }
+
+        public async Task<List<BsonDocument>> GetGreaterThan(string field, int value)
+        {
+            return await GenericQuery(GetLessThanDefinition(field, value));
+        }
+
+        public async Task<List<BsonDocument>> GetLessThan(string field, int value)
+        {
+            return await GenericQuery(GetLessThanDefinition(field, value));
+        }
+
+        public async void Insert(BsonDocument document, string tableName)
+        {
+            var collection = GetMongoCollection(tableName);
+            await collection.InsertOneAsync(document);
+        }
+
+        //Private method
+        private IMongoCollection<BsonDocument> GetMongoCollection(string name)
+        {
+            return MongoDatabase.GetCollection<BsonDocument>(name);
+        }
+
+        private FilterDefinition<BsonDocument> GetFilterDefinition(string field, string value)
+        {
+            return Builders<BsonDocument>.Filter.Eq(field, value);
+        }
+
+        private FilterDefinition<BsonDocument> GetFilterDefinition(string field, int value)
+        {
+            return Builders<BsonDocument>.Filter.Eq(field, value);
+        }
+
+        private FilterDefinition<BsonDocument> GetGreaterThanDefinition(string field, string value)
+        {
+            return Builders<BsonDocument>.Filter.Gt(field, value);
+        }
+
+        private FilterDefinition<BsonDocument> GetGreaterThanDefinition(string field, int value)
+        {
+            return Builders<BsonDocument>.Filter.Gt(field, value);
+        }
+
+        private FilterDefinition<BsonDocument> GetLessThanDefinition(string field, string value)
+        {
+            return Builders<BsonDocument>.Filter.Lt(field, value);
+        }
+
+        private FilterDefinition<BsonDocument> GetLessThanDefinition(string field, int value)
+        {
+            return Builders<BsonDocument>.Filter.Lt(field, value);
+        }
+
+        private async Task<List<BsonDocument>> GetResultCollection(IMongoCollection<BsonDocument> collection, FilterDefinition<BsonDocument> filterDefinition)
+        {
+            return await collection.Find(filterDefinition).ToListAsync();
+        }
+
+        private async Task<List<BsonDocument>> QueryAll()
+        {
+            var collection = GetMongoCollection(DbConstants.Table.Restaurants);
+            var filter = new BsonDocument();
+            var count = 0;            
+
+            using (var cursor = await collection.FindAsync(filter))
+            {
+                while (await cursor.MoveNextAsync())
+                {
+                    var batch = cursor.Current;
+                    foreach (var document in batch)
+                    {
+                        // process document                    
+                        count++;
+                    }
+                }
+            }
+
+            return count;
+        }
+
+        private async Task<List<BsonDocument>> Query(string field, string value)
+        {
+            var collection = GetMongoCollection(DbConstants.Table.Restaurants);
+            var filter = GetFilterDefinition(field, value);
+            var count = 0;
+            List<BsonDocument> result = null;        
+
+            using (var cursor = await collection.FindAsync(filter))
+            {
+                while (await cursor.MoveNextAsync())
+                {
+                    var batch = cursor.Current;
+                    foreach (var document in batch)
+                    {
+                        // process document                     
+                        count++;
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private async Task<List<BsonDocument>> Query(string field, int value)
+        {
+            var collection = GetMongoCollection(DbConstants.Table.Restaurants);
+            var filter = GetFilterDefinition(field, value);
+            var count = 0;
+            List<BsonDocument> result = null;
+
+            using (var cursor = await collection.FindAsync(filter))
+            {
+                while (await cursor.MoveNextAsync())
+                {
+                    var batch = cursor.Current;
+                    foreach (var document in batch)
+                    {
+                        // process document                     
+                        count++;
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private async Task<List<BsonDocument>> GenericQuery(FilterDefinition<BsonDocument> function)
+        {
+            var collection = GetMongoCollection(DbConstants.Table.Restaurants);
+            var filter = function;
+            var count = 0;
+            List<BsonDocument> result = null;
+
+            using (var cursor = await collection.FindAsync(filter))
+            {
+                while (await cursor.MoveNextAsync())
+                {
+                    var batch = cursor.Current;
+                    foreach (var document in batch)
+                    {
+                        // process document                      
+                        count++;
+                    }
+                }
+            }
+
+            return result;
+        }
